@@ -40,17 +40,6 @@ class Route
     public static RenderView $renderView;
 
     /**
-     * instanciando el objeto Session
-     */
-    public function __construct()
-    {
-        self::$request = new Request();
-        self::$responseHTTP = new ResponseHTTP();
-        self::$renderView = new RenderView();
-        self::checkRoutes();
-    }
-
-    /**
      * recibe el metodo  GET, el parametro de la url y el controlador o funcion
      * del archivo App/Config/Routes.php
      */
@@ -73,7 +62,10 @@ class Route
      */
     public static function run()
     {
-        return new static;
+        self::$request = new Request();
+        self::$responseHTTP = new ResponseHTTP();
+        self::$renderView = new RenderView();
+        self::checkRoutes();
     }
 
     protected static function checkRoutes()
