@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Controller\CAMBIODIR;
+
+use System\Controller;
+
+class CAMBIONAME extends Controller
+{
+
+    public function __construct()
+    {
+        //ejecutar para proteger la rutas cuando inicia sesion
+        //enviar la sesion y el parametro principal de la url
+        // $this->middleware($this->sessionGet('user'), ['/dashboard']);
+    }
+
+    public function index()
+    {
+        //return view('frontend/home', [
+        //   'var' => 'es una variable',
+        //]);
+    }
+
+    public function create()
+    {
+        $result = $this->request()->isPost();
+        if($result){
+            //
+        }
+        //return view('frontend/home', [
+        //   'var' => 'es una variable',
+        //]);
+    }
+
+    public function edit()
+    {
+        $result = $this->request()->isPost();
+        if($result){
+            //
+        }
+        //return view('frontend/home', [
+        //   'var' => 'es una variable',
+        //]);
+    }
+
+    public function destroy()
+    {
+    }
+}
