@@ -10,6 +10,7 @@ use System\Request;
 use System\Session;
 use System\Middleware;
 use System\RenderView;
+use System\Validation\Validation;
 
 
 class Controller
@@ -80,5 +81,15 @@ class Controller
     protected function request()
     {
         return new Request();
+    }
+
+    /**
+     * validacion de reglas para los datos de envio
+     */
+    protected function validate(array $inputs, array $rules)
+    {
+        $mm = new Validation;
+
+        return $mm->validate($inputs, $rules);
     }
 }
