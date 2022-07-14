@@ -1,4 +1,14 @@
 <?= extend('/frontView/layout/head.php') ?>
+
+<?php
+
+use System\Session;
+
+$ses = new Session;
+$session = $ses->get('user');
+?>
+<h1>Bienvenido: <?= $session[0]->name ?> </h1>
+
 <table class="table">
     <thead>
         <tr>
