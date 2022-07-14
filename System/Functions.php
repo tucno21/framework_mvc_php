@@ -1,5 +1,7 @@
 <?php
 
+use System\RenderView;
+
 /**
  * funciones principales para toda la aplicacion
  */
@@ -56,4 +58,33 @@ define('base_url', $baseURL);
 function base_url($parameters = null)
 {
     return base_url . $parameters;
+}
+
+/**
+ * Funcion para renderizar las vistas desde el controlador
+ */
+if (!function_exists('view')) {
+
+    function view(string $name, array $data = [])
+    {
+        if (!empty($name)) {
+            return RenderView::$renderApp->render($name, $data);
+        } else {
+            echo "Upsss... escriba una nombre o ruta/nombre para renderizar la vista";
+        }
+    }
+}
+
+/**
+ * funcion para renderizar vistas como redireccionamiento a otra vista
+ */
+if (!function_exists('redirect')) {
+    function redirect(string $name, array $data = [])
+    {
+        if (!empty($name)) {
+            return RenderView::$renderApp->render($name, $data);
+        } else {
+            echo "Upsss... escriba una nombre o ruta/nombre para renderizar la vista";
+        }
+    }
 }

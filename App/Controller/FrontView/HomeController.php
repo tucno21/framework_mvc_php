@@ -12,6 +12,8 @@ class HomeController extends Controller
 
     public function index()
     {
-        echo 'desde el controlador home';
+        return view('frontView/index', [
+            'var' => 'es una variable',
+        ]);
     }
 }
