@@ -1,12 +1,6 @@
 <IfModule mod_rewrite.c>
+    Options -MultiViews
     RewriteEngine On
-
-    #index.php sera el principal documento
-    RewriteBase /
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-
-    ##Si la petición es index.php, redirigir a index.php
-    #RewriteRule ^(.*)$ index.php/$1 [L]
-    RewriteRule ^(.*)$ index.php?/$1 [L]
+    RewriteRule ^ index.php [QSA,L]
 </IfModule>
