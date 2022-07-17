@@ -262,30 +262,27 @@ class Model
         //ejecuta el query y retorna los resultados
         $result = self::$db->query(self::$query);
         $cant = $result->num_rows;
-        if ($cant > 0) {
-            //alamcenar los resultados en un array
-            $dataQuery = [];
-            if (self::$returnType == 'object') {
-                while ($row = $result->fetch_object()) {
-                    $dataQuery[] = $row;
-                }
-            } elseif (self::$returnType == 'array') {
-                while ($row = $result->fetch_assoc()) {
-                    $dataQuery[] = $row;
-                }
+        //alamcenar los resultados en un array
+        $dataQuery = [];
+        if (self::$returnType == 'object') {
+            while ($row = $result->fetch_object()) {
+                $dataQuery[] = $row;
             }
-
-            if ($cant === 1) {
-                return $dataQuery[0];
+        } elseif (self::$returnType == 'array') {
+            while ($row = $result->fetch_assoc()) {
+                $dataQuery[] = $row;
             }
-            // $result->free_result();
-            // $result->free();
-            $result->close();
-            // self::db_close();
-
-            return  $dataQuery;
         }
-        return 'no se encontraron resultados';
+
+        if ($cant === 1) {
+            return $dataQuery[0];
+        }
+        // $result->free_result();
+        // $result->free();
+        $result->close();
+        // self::db_close();
+
+        return  $dataQuery;
     }
 
     /**
