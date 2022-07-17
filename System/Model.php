@@ -35,7 +35,7 @@ class Model
     protected static $orderBy = null;
     protected static $select = null;
     protected static $join = null;
-
+    protected static $woj = false;
     /**
      * si existe columna password para encriptar
      */
@@ -124,7 +124,6 @@ class Model
      */
     protected static function runQuery()
     {
-        self::getConnection();
         try {
             $result = self::$db->query(self::$query);
 
@@ -160,8 +159,12 @@ class Model
     /**
      * crear un nuevo registro
      */
-    public static function create(array $data)
+    public static function create($data)
     {
+        if (is_object($data))
+            $data = (array)$data;
+
+        self::getConnection();
         self::passEncrypt();
         self::useTimestamps();
 
@@ -188,8 +191,12 @@ class Model
     /**
      * actualizar un registro
      */
-    public static function update(mixed $id, array $data)
+    public static function update(mixed $id, $data)
     {
+        if (is_object($data))
+            $data = (array)$data;
+
+        self::getConnection();
         self::passEncrypt();
         self::useTimestamps();
 
@@ -222,6 +229,7 @@ class Model
      */
     public static function delete(mixed $id)
     {
+        self::getConnection();
         $primaryKey = static::$primaryKey;
 
         self::$query = "DELETE FROM " . static::$table . " WHERE $primaryKey= '" . self::$db->escape_string($id) . "'";
@@ -233,6 +241,7 @@ class Model
 
     public static function destroy(mixed $id)
     {
+        self::getConnection();
         $primaryKey = static::$primaryKey;
 
         self::$query = "DELETE FROM " . static::$table . " WHERE $primaryKey= '" . self::$db->escape_string($id) . "'";
@@ -248,29 +257,35 @@ class Model
      */
     private static function readDB()
     {
-        self::getConnection();
         self::returnType();
 
         //ejecuta el query y retorna los resultados
         $result = self::$db->query(self::$query);
+        $cant = $result->num_rows;
+        if ($cant > 0) {
+            //alamcenar los resultados en un array
+            $dataQuery = [];
+            if (self::$returnType == 'object') {
+                while ($row = $result->fetch_object()) {
+                    $dataQuery[] = $row;
+                }
+            } elseif (self::$returnType == 'array') {
+                while ($row = $result->fetch_assoc()) {
+                    $dataQuery[] = $row;
+                }
+            }
 
-        //alamcenar los resultados en un array
-        $dataQuery = [];
-        if (self::$returnType == 'object') {
-            while ($row = $result->fetch_object()) {
-                $dataQuery[] = $row;
+            if ($cant === 1) {
+                return $dataQuery[0];
             }
-        } elseif (self::$returnType == 'array') {
-            while ($row = $result->fetch_assoc()) {
-                $dataQuery[] = $row;
-            }
+            // $result->free_result();
+            // $result->free();
+            $result->close();
+            // self::db_close();
+
+            return  $dataQuery;
         }
-        // $result->free_result();
-        // $result->free();
-        $result->close();
-        // self::db_close();
-
-        return  $dataQuery;
+        return 'no se encontraron resultados';
     }
 
     /**
@@ -278,6 +293,7 @@ class Model
      */
     public static function all()
     {
+        self::getConnection();
         self::$query = "SELECT * FROM " . static::$table;
         return self::readDB();
     }
@@ -287,6 +303,7 @@ class Model
      */
     public static function find(mixed $id)
     {
+        self::getConnection();
         $id = self::$db->escape_string($id);
         self::$query = "SELECT * FROM " . static::$table . " WHERE " . static::$primaryKey . " = '$id'";
         return self::readDB();
@@ -297,16 +314,19 @@ class Model
      */
     public static function first(mixed $colum = null, mixed $valColum = null)
     {
+        if (self::$woj == false)
+            self::getConnection();
+
         if ($colum != null || $valColum != null) {
             $colum = self::$db->escape_string($colum);
             $valColum = self::$db->escape_string((string) $valColum);
         }
 
         if ($colum != null && $valColum != null) {
-            self::$query = "SELECT * FROM " . static::$table . " WHERE $colum = '" . $valColum . "'";
+            self::$query = "SELECT * FROM " . static::$table . " WHERE $colum = '" . $valColum . "'" . " LIMIT 1";
         } elseif ($colum != null) {
             $primaryKey = static::$primaryKey;
-            self::$query = "SELECT * FROM " . static::$table . " WHERE $primaryKey = '$colum'";
+            self::$query = "SELECT * FROM " . static::$table . " WHERE $primaryKey = '$colum'" . " LIMIT 1";
         } else {
             self::$query = "SELECT * FROM " . static::$table . self::$where . self::$orderBy . " LIMIT 1";
         }
@@ -320,6 +340,9 @@ class Model
      */
     public static function get()
     {
+        if (self::$woj == false)
+            self::getConnection();
+
         if (self::$select != null) {
             self::$query = "SELECT " . self::$select . " FROM " . static::$table . self::$join . self::$where . self::$orderBy;
         } else {
@@ -341,6 +364,8 @@ class Model
      */
     public static function where(string $colum, string $operator = null, mixed $valueColum = null)
     {
+        self::$woj = true;
+        self::getConnection();
         $colum = self::$db->escape_string($colum);
         $operator = self::$db->escape_string((string) $operator);
         $valueColum = self::$db->escape_string((string) $valueColum);
@@ -361,6 +386,8 @@ class Model
      */
     public static function orderBy(string $colum, string $order)
     {
+        self::$woj = true;
+        self::getConnection();
         $colum = self::$db->escape_string($colum);
         $order = self::$db->escape_string((string) $order);
 
@@ -373,6 +400,9 @@ class Model
      */
     public static function count()
     {
+        if (self::$woj == false)
+            self::getConnection();
+
         self::$query = "SELECT * FROM " . static::$table . self::$where . self::$orderBy;
 
         $count = self::readDB();
@@ -384,6 +414,9 @@ class Model
      */
     public static function max(string $colum)
     {
+        if (self::$woj == false)
+            self::getConnection();
+
         $colum = self::$db->escape_string($colum);
         self::$query = "SELECT MAX($colum) FROM " . static::$table . self::$where . self::$orderBy;
         $max = self::readDB();
@@ -404,6 +437,9 @@ class Model
      */
     public static function min(string $colum)
     {
+        if (self::$woj == false)
+            self::getConnection();
+
         $colum = self::$db->escape_string($colum);
         self::$query = "SELECT MIN($colum) FROM " . static::$table . self::$where . self::$orderBy;
         $min = self::readDB();
@@ -424,6 +460,9 @@ class Model
      */
     public static function avg(string $colum)
     {
+        if (self::$woj == false)
+            self::getConnection();
+
         $colum = self::$db->escape_string($colum);
         self::$query = "SELECT AVG($colum) FROM " . static::$table . self::$where . self::$orderBy;
         $avg = self::readDB();
@@ -444,6 +483,9 @@ class Model
      */
     public static function sum(string $colum)
     {
+        if (self::$woj == false)
+            self::getConnection();
+
         $colum = self::$db->escape_string($colum);
         self::$query = "SELECT SUM($colum) FROM " . static::$table . self::$where . self::$orderBy;
         $sum = self::readDB();
@@ -464,6 +506,9 @@ class Model
      */
     public static function join($table, $colum, $operator, $colum2)
     {
+        self::$woj = true;
+        self::getConnection();
+
         self::$join =  " INNER JOIN $table ON $colum $operator $colum2";
         return new static;
     }
@@ -539,7 +584,7 @@ class Model
     //RECIVE UN QUERY Y ENVIA GRUPOS DE OBJETOS
     public static function queryMod(string $query)
     {
-        // self::getConnection();
+        self::getConnection();
         self::$query = $query;
         return self::readDB();
     }
